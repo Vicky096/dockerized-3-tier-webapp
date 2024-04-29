@@ -1,0 +1,66 @@
+version: '3'
+services:
+  postgres:
+    build:
+      context: ./database
+      dockerfile: dockerfile
+    container_name: postgres-db
+    restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      - 3-tier-app_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: backend-flask
+    restart: always
+    ports:
+      - "5000:5000"
+    networks:
+      - 3-tier-app_network
+    depends_on:
+      - postgres
+       
+       
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    container_name: frontend-react
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - 3-tier-app_network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - 3-tier-app_network
+    depends_on:
+      - frontend
+      - backend
+
+networks:
+  3-tier-app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+
